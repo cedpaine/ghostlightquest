@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UDP Message Branching</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        .message-container { margin-top: 0px; }
+        .branch-success { color: green; font-weight: bold; }
+        .branch-error { color: red; font-weight: bold; }
+        .branch-info { color: blue; }
+        .status-light { display: inline-block; width: 20px; height: 20px; border-radius: 50%; background-color: grey; margin-left: 10px; }
+        .status-connected { background-color: green; }
+        .status-disconnected { background-color: red; }
+        video::-webkit-media-controls { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Ghost Light Quest</h1>
+    <p>WebSocket Status: <span id="status-indicator" class="status-light"></span></p>
+    <div id="message-container" class="message-container">
+       <video id="gameVideo" playsinline width="240" autoplay>
+  		 <source src="Pause1.mp4" type="video/mp4">
+ 	   </video>
+    </div>
+    <button id="fullscreenButton">Go Fullscreen</button>
+    <script>
+    	var playing = 'Pause1.mp4';
+    	var video = {
+    		'Pause1.mp4': {loop: 3, next: 'Seq1.mp4', yellow:'Seq1.mp4', blue: 'Seq1.mp4'},
+    		'Seq1.mp4': {loop: 0, next: 'Pause2.mp4'},
+    		'Pause2.mp4': {loop: 3, next: 'Seq3.mp4', yellow:'Seq2.mp4', blue: 'Seq3.mp4'},
+    		'Seq2.mp4': {loop: 0, next: 'Pause1.mp4'},
+    		'Seq3.mp4': {loop: 0, next: 'Pause3.mp4'},
+    		'Pause3.mp4': {loop: 3, next: 'random', yellow:'Seq4.mp4', blue: 'Seq5.mp4'},
+    		'Seq4.mp4': {loop: 0, next: 'Pause4.mp4'},
+    		'Seq5.mp4': {loop: 0, next: 'Seq8.mp4'},
+    		'Pause4.mp4': {loop: 3, next: 'Seq7.mp4', yellow:'Seq6.mp4', blue: 'Seq7.mp4'},
+    		'Seq6.mp4': {loop: 0, next: 'Pause1.mp4'},
+    		'Seq7.mp4': {loop: 0, next: 'Seq8.mp4'},
+    		'Seq8.mp4': {loop: 0, next: 'Pause5.mp4'},
+    		'Pause5.mp4': {loop: 3, next: 'Seq10.mp4', yellow:'Seq9.mp4', blue: 'Seq10.mp4'},
+    		'Seq9.mp4': {loop: 0, next: 'Pause1.mp4'},
+    		'Seq10.mp4': {loop: 0, next: 'Pause6.mp4'},
+    		'Pause6.mp4': {loop: 3, next: 'random', yellow:'Seq11.mp4', blue: 'Seq12.mp4'},
+    		'Seq11.mp4': {loop: 0, next: 'Pause7.mp4'},
+    		'Seq12.mp4': {loop: 0, next: 'Pause8.mp4'},
+    		'Pause7.mp4': {loop: 3, next: 'Seq15.mp4', yellow:'Seq14.mp4', blue: 'Seq15.mp4'},
+    		'Pause8.mp4': {loop: 3, next: 'Seq16.mp4', yellow:'Seq13.mp4', blue: 'Seq16.mp4'},
+    		'Seq13.mp4': {loop: 0, next: 'Pause1.mp4'},
+    		'Seq14.mp4': {loop: 0, next: 'Pause1.mp4'},
+    		'Seq15.mp4': {loop: 0, next: 'Seq17.mp4'},
+    		'Seq16.mp4': {loop: 0, next: 'Seq17.mp4'},
+    		'Seq17.mp4': {loop: 0, next: 'Pause9.mp4'},
+    		'Pause9.mp4': {loop: 3, next: 'random', yellow:'Seq18.mp4', blue: 'Seq19.mp4'},
+    		'Seq18.mp4': {loop: 0, next: 'Pause10.mp4'},
+    		'Seq19.mp4': {loop: 0, next: 'Pause11.mp4'},
+    		'Pause10.mp4': {loop: 3, next: 'Seq21.mp4', yellow:'Seq20.mp4', blue: 'Seq21.mp4'},
+    		'Pause11.mp4': {loop: 3, next: 'Seq22.mp4', yellow:'Seq22.mp4', blue: 'Seq23.mp4'},
+    		'Seq20.mp4': {loop: 0, next: 'Pause1.mp4'},
+    		'Seq21.mp4': {loop: 0, next: 'Pause1.mp4'},
+    		'Seq22.mp4': {loop: 0, next: 'Pause1.mp4'},
+    		'Seq23.mp4': {loop: 0, next: 'Pause1.mp4'}
+    	}
+    	
+    	let vid = document.getElementById("gameVideo");
+    	vid.controls = false;
+    	var loopNum = 1;
+    	vid.addEventListener('ended', () => {
+    		if (loopNum < video[playing]['loop']) {
+    			vid.src = playing;
+  				loopNum++;
+  				console.log('loopNum = ' + loopNum);
+  			}
+  			 else {
+  			 	var next = video[playing]['next'];
+  			 	if (next == 'random') {
+  			 	  if (Math.random() < 0.5)
+  			 	  	next = video[playing]['yellow'];
+  			 	  else
+  			 	  	next = video[playing]['blue'];
+  			 	}
+  			    vid.src = next;
+  			    playing = next;
+  			    loopNum = 1;
+  			 }
+		});
+		
+		const fullscreenButton = document.getElementById('fullscreenButton');
+
+		fullscreenButton.addEventListener('click', () => {
+  			if (vid.requestFullscreen) {
+    			vid.requestFullscreen();
+  			}
+		});
+		
+        const websocket = new WebSocket('ws://localhost:8080');
+
+        const statusIndicator = document.getElementById('status-indicator');
+        const messageContainer = document.getElementById('message-container');
+
+        websocket.onopen = () => {
+            console.log('WebSocket connected');
+            statusIndicator.classList.remove('status-disconnected');
+            statusIndicator.classList.add('status-connected');
+        };
+
+        websocket.onclose = () => {
+            console.log('WebSocket disconnected');
+            statusIndicator.classList.remove('status-connected');
+            statusIndicator.classList.add('status-disconnected');
+        };
+
+        websocket.onmessage = (event) => {
+            const message = event.data;
+console.log(message);
+console.log(message.includes('Blue'));
+console.log(playing);
+console.log('Listening = ' + playing.includes('Pause'));
+
+            // Branching logic based on the message content
+            if (playing.includes('Pause') && message.includes('Blue')) {
+console.log('playing Blue');
+                vid.src = video[playing]['blue'];
+                playing = video[playing]['blue'];
+            } else if (playing.includes('Pause') && message.includes('Yellow')) {
+                vid.src = video[playing]['yellow'];
+                playing = video[playing]['yellow'];
+            }
+        }
+        
+
+        websocket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+    </script>
+</body>
+</html>
