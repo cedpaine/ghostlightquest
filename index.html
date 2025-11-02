@@ -7,18 +7,10 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
         .message-container { margin-top: 0px; }
-        .branch-success { color: green; font-weight: bold; }
-        .branch-error { color: red; font-weight: bold; }
-        .branch-info { color: blue; }
-        .status-light { display: inline-block; width: 20px; height: 20px; border-radius: 50%; background-color: grey; margin-left: 10px; }
-        .status-connected { background-color: green; }
-        .status-disconnected { background-color: red; }
-        video::-webkit-media-controls { display: none; }
     </style>
 </head>
 <body>
     <h1>Ghost Light Quest</h1>
-    <p>WebSocket Status: <span id="status-indicator" class="status-light"></span></p>
     <div id="message-container" class="message-container">
        <video id="gameVideo" playsinline width="240" autoplay>
   		 <source src="Pause1.mp4" type="video/mp4">
