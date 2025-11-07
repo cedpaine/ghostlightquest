@@ -59,8 +59,16 @@
     	let vid = document.getElementById("gameVideo");
 
 vid.addEventListener("playing", () => {
-        console.log(vid.videoWidth);
-        console.log(vid.videoHeight);
+	
+
+const availableScreenWidth = window.screen.availWidth;
+const availableScreenHeight = window.screen.availHeight;
+
+console.log("Available Screen Width:", availableScreenWidth);
+console.log("Available Screen Height:", availableScreenHeight);
+	
+        console.log("Video Width", vid.videoWidth);
+        console.log("Video Height", vid.videoHeight);
       });
 		
     	vid.controls = false;
