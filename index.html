@@ -57,6 +57,7 @@
     	}
     	
     	let vid = document.getElementById("gameVideo");
+		vid.requestFullscreen();
     	vid.controls = false;
     	var loopNum = 1;
     	vid.addEventListener('ended', () => {
