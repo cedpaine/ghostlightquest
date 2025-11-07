@@ -58,10 +58,10 @@
     	
     	let vid = document.getElementById("gameVideo");
 
-var h = vid.videoHeight; // returns the intrinsic height of the video
-var w = vid.videoWidth; // returns the intrinsic width of the video
-console.log ('h = ' + h);
-console.log ('w = ' + w);
+vid.addEventListener("playing", () => {
+        console.log(vid.videoWidth);
+        console.log(vid.videoHeight);
+      });
 		
     	vid.controls = false;
     	var loopNum = 1;
@@ -82,12 +82,6 @@ console.log ('w = ' + w);
   			    vid.src = next;
   			    playing = next;
   			    loopNum = 1;
-
-var h = vid.videoHeight; // returns the intrinsic height of the video
-var w = vid.videoWidth; // returns the intrinsic width of the video
-console.log ('h = ' + h);
-console.log ('w = ' + w);
-				 
   			 }
 		});
 		
