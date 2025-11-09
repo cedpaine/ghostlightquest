@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!--
+ChatGTP prompt:
+css, html, and javascript for a video with a circular button overlay covering 30% of the 
+width of the video. The video should be in portrait mode with a 9:16 aspect ratio.
+-->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Portrait Video with 30% Circular Overlay</title>
+<style>
+  :root{
+    --max-width: 420px; /* you can change the max width */
+    --overlay-size: 30%; /* diameter = 30% of the video's width */
+  }
+
+  body{
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    display:flex;
+    min-height:100vh;
+    align-items:center;
+    justify-content:center;
+    background:#0f1720;
+    margin:0;
+    padding:24px;
+    color: #fff;
+  }
+
+  /* Container that maintains a 9:16 portrait aspect ratio */
+  .video-container{
+    width:100%;
+    max-width:var(--max-width);
+    /* prefer modern aspect-ratio if available */
+    aspect-ratio: 9 / 16; /* width / height -> portrait */
+    position:relative;
+    background:#000;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.7);
+  }
+
+  /* Fallback for browsers without aspect-ratio */
+  .video-container.fallback {
+    height:0;
+    padding-top:177.7777778%; /* (16/9)*100% */
+  }
+
+  .video-container video,
+  .video-container .poster{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  /* Circular overlay button */
+  .overlay-btn{
+    position:absolute;
+    /* size relative to video width */
+    width:var(--overlay-size);
+    aspect-ratio:1/1; /* keep it circular */
+    border-radius:50%;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:2px solid rgba(255,255,255,0.12);
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    cursor:pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+    box-shadow: 0 8px 18px rgba(2,6,23,0.55);
+    user-select:none;
+  }
+
+  .overlay-btn:active { transform: translate(-50%,-50%) scale(0.98); }
+
+  .overlay-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 6px rgba(99,102,241,0.14), 0 10px 25px rgba(2,6,23,0.65);
+  }
+
+  /* icon inside button */
+  .overlay-btn svg{
+    width:46%;
+    height:46%;
+    display:block;
+    fill: white;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+  }
+
+  /* small label for debugging/demo (optional) */
+  .note{
+    margin-top:12px;
+    text-align:center;
+    font-size:13px;
+    color: #cbd5e1;
+  }
+
+  /* responsive adjustments */
+  @media (max-width:380px){
+    :root{ --max-width: 320px; }
+  }
+</style>
+</head>
+<body>
+
+  <div>
+    <div class="video-container" id="videoContainer" role="group" aria-label="Demo portrait video">
+      <!-- replace the src with your MP4 / WebM; set muted/autoplay if desired -->
+      <video id="myVideo" preload="metadata" playsinline webkit-playsinline>
+        <source src="Pause1.mp4" type="video/mp4">
+        <!-- fallback poster if video cannot play -->
+        Your browser does not support the video element.
+      </video>
+
+      <!-- overlay button (diameter = 30% of video width) -->
+      <button id="overlayBtn" class="overlay-btn" aria-pressed="false" aria-label="Play video (press Enter or Space to toggle)">
+        <!-- Play / Pause icon: we'll swap paths with JS -->
+        <svg id="btnIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <!-- default: play icon -->
+          <path d="M8 5v14l11-7z"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="note">Portrait video (9:16). Circular overlay = 30% of video width.</div>
+  </div>
+
+<script>
+  (function(){
+    const video = document.getElementById('myVideo');
+    const btn = document.getElementById('overlayBtn');
+    const icon = document.getElementById('btnIcon');
+    const container = document.getElementById('videoContainer');
+
+    // If the browser doesn't support CSS aspect-ratio, enable fallback class
+    (function addAspectFallback(){
+      const test = CSS.supports && CSS.supports('aspect-ratio: 1 / 1');
+      if(!test){
+        container.classList.add('fallback');
+      }
+    })();
+
+    // Icons (simple SVG paths)
+    const ICONS = {
+      play: '<path d="M8 5v14l11-7z"></path>',
+      pause: '<path d="M6 19h4V5H6zm8-14v14h4V5z"></path>'
+    };
+
+    function setIcon(isPlaying){
+      icon.innerHTML = isPlaying ? ICONS.pause : ICONS.play;
+    }
+
+    // Toggle play/pause
+    function togglePlay(){
+      if(video.paused || video.ended){
+        // try to play (may be blocked unless muted or user interaction)
+        const p = video.play();
+        if(p !== undefined){
+          p.catch(err => {
+            // autoplay may be blocked; just set icon state as best-effort
+            console.warn('Play prevented:', err);
+          });
+        }
+      } else {
+        video.pause();
+      }
+    }
+
+    // update button state when playback changes
+    video.addEventListener('play', () => {
+      btn.setAttribute('aria-pressed', 'true');
+      setIcon(true);
+    });
+    video.addEventListener('pause', () => {
+      btn.setAttribute('aria-pressed', 'false');
+      setIcon(false);
+    });
+    video.addEventListener('ended', () => {
+      btn.setAttribute('aria-pressed', 'false');
+      setIcon(false);
+    });
+
+    // click / keyboard handlers
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      togglePlay();
+    });
+
+    btn.addEventListener('keydown', (e) => {
+      // allow Enter or Space to toggle
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        togglePlay();
+      }
+    });
+
+    // allow clicking the video itself to toggle as well (optional)
+    video.addEventListener('click', togglePlay);
+
+    // set initial icon based on paused state
+    setIcon(video && !video.paused);
+
+    // OPTIONAL: Make sure video is muted on load if you want autoplay to work on some browsers:
+    // video.muted = true;
+    // video.autoplay = true;
+  })();
+</script>
+
+</body>
+</html>
