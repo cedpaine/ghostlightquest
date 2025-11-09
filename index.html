@@ -6,7 +6,20 @@
     <title>UDP Message Branching</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        .message-container { margin-top: 0px; }
+        .message-container { 
+			margin-top: 0px;
+			position: relative; 
+		}
+		.yellow-button { 
+			position: fixed;
+  			top: 10;
+  			left: 10; 
+			right: 50;
+			bottom: 50;
+  			background-color: rgba(255,255,0,1.0); /* Yellow background, opaque */
+  			z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+  			cursor: pointer; /* Add a pointer on hover */
+		}
     </style>
 </head>
 <body>
@@ -15,7 +28,10 @@
        <video id="gameVideo" playsinline width="240" autoplay>
   		 <source src="Pause1.mp4" type="video/mp4">
  	   </video>
+       <div id="Yellow-button" class="yellow-button">
+	   </div>
     </div>
+		
     <button id="fullscreenButton">Go Fullscreen</button>
     <script>
     	var playing = 'Pause1.mp4';
