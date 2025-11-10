@@ -7,18 +7,10 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
         .message-container { margin-top: 0px; }
-        .branch-success { color: green; font-weight: bold; }
-        .branch-error { color: red; font-weight: bold; }
-        .branch-info { color: blue; }
-        .status-light { display: inline-block; width: 20px; height: 20px; border-radius: 50%; background-color: grey; margin-left: 10px; }
-        .status-connected { background-color: green; }
-        .status-disconnected { background-color: red; }
-        video::-webkit-media-controls { display: none; }
     </style>
 </head>
 <body>
     <h1>Ghost Light Quest</h1>
-    <p>WebSocket Status: <span id="status-indicator" class="status-light"></span></p>
     <div id="message-container" class="message-container">
        <video id="gameVideo" playsinline width="240" autoplay>
   		 <source src="Pause1.mp4" type="video/mp4">
@@ -94,46 +86,6 @@
     			vid.requestFullscreen();
   			}
 		});
-		
-        const websocket = new WebSocket('ws://localhost:8080');
-
-        const statusIndicator = document.getElementById('status-indicator');
-        const messageContainer = document.getElementById('message-container');
-
-        websocket.onopen = () => {
-            console.log('WebSocket connected');
-            statusIndicator.classList.remove('status-disconnected');
-            statusIndicator.classList.add('status-connected');
-        };
-
-        websocket.onclose = () => {
-            console.log('WebSocket disconnected');
-            statusIndicator.classList.remove('status-connected');
-            statusIndicator.classList.add('status-disconnected');
-        };
-
-        websocket.onmessage = (event) => {
-            const message = event.data;
-console.log(message);
-console.log(message.includes('Blue'));
-console.log(playing);
-console.log('Listening = ' + playing.includes('Pause'));
-
-            // Branching logic based on the message content
-            if (playing.includes('Pause') && message.includes('Blue')) {
-console.log('playing Blue');
-                vid.src = video[playing]['blue'];
-                playing = video[playing]['blue'];
-            } else if (playing.includes('Pause') && message.includes('Yellow')) {
-                vid.src = video[playing]['yellow'];
-                playing = video[playing]['yellow'];
-            }
-        }
-        
-
-        websocket.onerror = (error) => {
-            console.error('WebSocket error:', error);
-        };
     </script>
 </body>
 </html>
