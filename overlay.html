@@ -131,6 +131,7 @@ width of the video. The video should be in portrait mode with a 9:16 aspect rati
     </div>
 
     <div class="note">Portrait video (9:16). Circular overlay = 30% of video width.</div>
+    <button id="fullscreenButton">Go Fullscreen</button>
   </div>
 
 <script>
@@ -212,6 +213,14 @@ width of the video. The video should be in portrait mode with a 9:16 aspect rati
     // video.muted = true;
     // video.autoplay = true;
   })();
+		
+	const fullscreenButton = document.getElementById('fullscreenButton');
+
+	fullscreenButton.addEventListener('click', () => {
+  		if (video.requestFullscreen) {
+    		video.requestFullscreen();
+  		}
+	});
 </script>
 
 </body>
