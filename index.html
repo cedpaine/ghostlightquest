@@ -6,35 +6,24 @@
     <title>UDP Message Branching</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        .message-container { 
-			margin-top: 0px;
-			position: relative; 
-		}
-		.yellow-button { 
-			position: absolute;
-			width: 100%;
-			height: 100%;
-  			top: 10;
-  			left: 10; 
-			right: 50;
-			bottom: 50;
-  			background-color: rgba(255,255,0,1.0); /* Yellow background, opaque */
-  			z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
-  			cursor: pointer; /* Add a pointer on hover */
-		}
+        .message-container { margin-top: 0px; }
+        .branch-success { color: green; font-weight: bold; }
+        .branch-error { color: red; font-weight: bold; }
+        .branch-info { color: blue; }
+        .status-light { display: inline-block; width: 20px; height: 20px; border-radius: 50%; background-color: grey; margin-left: 10px; }
+        .status-connected { background-color: green; }
+        .status-disconnected { background-color: red; }
+        video::-webkit-media-controls { display: none; }
     </style>
 </head>
 <body>
     <h1>Ghost Light Quest</h1>
+    <p>WebSocket Status: <span id="status-indicator" class="status-light"></span></p>
     <div id="message-container" class="message-container">
        <video id="gameVideo" playsinline width="240" autoplay>
   		 <source src="Pause1.mp4" type="video/mp4">
  	   </video>
-<!--       <div id="yellow-button" class="yellow-button">
-		   Hello World
-	   </div> -->
     </div>
-		
     <button id="fullscreenButton">Go Fullscreen</button>
     <script>
     	var playing = 'Pause1.mp4';
@@ -76,20 +65,6 @@
     	}
     	
     	let vid = document.getElementById("gameVideo");
-
-vid.addEventListener("playing", () => {
-	
-
-const availableScreenWidth = window.screen.availWidth;
-const availableScreenHeight = window.screen.availHeight;
-
-console.log("Available Screen Width:", availableScreenWidth);
-console.log("Available Screen Height:", availableScreenHeight);
-	
-        console.log("Video Width", vid.videoWidth);
-        console.log("Video Height", vid.videoHeight);
-      });
-		
     	vid.controls = false;
     	var loopNum = 1;
     	vid.addEventListener('ended', () => {
@@ -119,6 +94,46 @@ console.log("Available Screen Height:", availableScreenHeight);
     			vid.requestFullscreen();
   			}
 		});
+		
+        const websocket = new WebSocket('ws://localhost:8080');
+
+        const statusIndicator = document.getElementById('status-indicator');
+        const messageContainer = document.getElementById('message-container');
+
+        websocket.onopen = () => {
+            console.log('WebSocket connected');
+            statusIndicator.classList.remove('status-disconnected');
+            statusIndicator.classList.add('status-connected');
+        };
+
+        websocket.onclose = () => {
+            console.log('WebSocket disconnected');
+            statusIndicator.classList.remove('status-connected');
+            statusIndicator.classList.add('status-disconnected');
+        };
+
+        websocket.onmessage = (event) => {
+            const message = event.data;
+console.log(message);
+console.log(message.includes('Blue'));
+console.log(playing);
+console.log('Listening = ' + playing.includes('Pause'));
+
+            // Branching logic based on the message content
+            if (playing.includes('Pause') && message.includes('Blue')) {
+console.log('playing Blue');
+                vid.src = video[playing]['blue'];
+                playing = video[playing]['blue'];
+            } else if (playing.includes('Pause') && message.includes('Yellow')) {
+                vid.src = video[playing]['yellow'];
+                playing = video[playing]['yellow'];
+            }
+        }
+        
+
+        websocket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
     </script>
 </body>
 </html>
