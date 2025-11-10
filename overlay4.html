@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!--> ChatGPT Prompt:
+css, html, and javascript for a video with a circular button overlay covering 30% of the 
+width of the video. There should be a full screen button that displays the entire video 
+with the overlay button still in place. Center the video horizontally. In full-screen, 
+show the entire height of the video.
+-->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Video with Circular Overlay</title>
+  <style>
+    body{
+      margin:0;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+      background:#111;
+      font-family:Arial;
+    }
+
+    .video-container{
+      position:relative;
+      width:320px;
+      aspect-ratio:9/16;
+      background:#000;
+      overflow:hidden;
+      margin:0 auto; /* center horizontally */
+    }
+
+    video{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .overlay-btn{
+      position:absolute;
+      width:30%;           /* 30% of video width */
+      aspect-ratio:1/1;    /* circle */
+      border-radius:50%;
+      background:rgba(255,255,255,0.7);
+      top:50%;
+      left:50%;
+      transform:translate(-50%, -50%);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      cursor:pointer;
+      font-size:28px;
+      font-weight:bold;
+      user-select:none;
+    }
+
+    /* Fullscreen keeps overlay positioned */
+    .video-container:fullscreen{
+      width:100vw;
+      height:100vh;
+      aspect-ratio:auto;
+    }
+
+    .controls{
+      text-align:center;
+      margin-top:16px;
+    }
+    .btn{
+      padding:8px 14px;
+      border:none;
+      background:#444;
+      color:#fff;
+      border-radius:8px;
+      cursor:pointer;
+    }
+  
+    /* fullscreen video should show entire height */
+    .video-container:fullscreen video{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+    }
+
+    .video-container:-webkit-full-screen video{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="video-container" id="vidBox">
+      <video id="video" playsinline>
+        <source src="sample.mp4" type="video/mp4" />
+      </video>
+      <div class="overlay-btn" id="overlayBtn">▶</div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="fsBtn">Fullscreen</button>
+    </div>
+  </div>
+
+  <script>
+    const video = document.getElementById("video");
+    const overlayBtn = document.getElementById("overlayBtn");
+    const fsBtn = document.getElementById("fsBtn");
+    const vidBox = document.getElementById("vidBox");
+
+    overlayBtn.addEventListener("click", () => {
+      if (video.paused){
+        video.play();
+        overlayBtn.textContent = "❚❚";
+      } else {
+        video.pause();
+        overlayBtn.textContent = "▶";
+      }
+    });
+
+    fsBtn.addEventListener("click", () => {
+      if (!document.fullscreenElement){
+        vidBox.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+  </script>
+</body>
+</html>
