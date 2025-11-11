@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="en">
 <head>
-<!--> ChatGPT Prompt:
+<!-- ChatGPT Prompts:
 css, html, and javascript for a video with a circular button overlay covering 30% of the 
 width of the video. There should be a full screen button that displays the entire video 
 with the overlay button still in place. Center the video horizontally. In full-screen, 
 show the entire height of the video.
+Remove width and aspect-ratio from the css for video-container. Make video-container the 
+height of the available window.
 -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -23,11 +25,13 @@ show the entire height of the video.
 
     .video-container{
       position:relative;
-      /* width:320px; */
-      /* aspect-ratio:9/16; */
+      height:100vh; /* fill available window height */
       background:#000;
       overflow:hidden;
       margin:0 auto; /* center horizontally */
+      display:flex;
+      justify-content:center;
+      align-items:center;
     }
 
     video{
