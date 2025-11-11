@@ -115,10 +115,12 @@ height of the available window.
 
     overlayBtn.addEventListener("click", () => {
       if (video.paused){
+        vidBox.requestFullscreen();
         video.play();
         overlayBtn.textContent = "❚❚";
       } else {
         video.pause();
+        document.exitFullscreen();
         overlayBtn.textContent = "▶";
       }
     });
