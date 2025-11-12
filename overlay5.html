@@ -11,7 +11,7 @@ height of the available window.
 -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Video with Circular Overlay</title>
+  <title>Video with Circular Overlay Buttons</title>
   <style>
     body{
       margin:0;
@@ -41,7 +41,7 @@ height of the available window.
       display:block;
     }
 
-    .overlay-btn{
+    .yellow-btn{
       position:absolute;
       height:10.6%;           /* 10% of video height */
       aspect-ratio:1/1;    /* circle */
@@ -59,7 +59,25 @@ height of the available window.
       user-select:none;
     }
 
-    /* Fullscreen keeps overlay positioned */
+    .blue-btn{
+      position:absolute;
+      height:10.6%;           /* 10% of video height */
+      aspect-ratio:1/1;    /* circle */
+      border-radius:50%;
+      background:rgba(255,255,255,0.7);
+      top:21%;
+      left:50%;
+      transform:translateX(48%);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      cursor:pointer;
+      font-size:28px;
+      font-weight:bold;
+      user-select:none;
+    }
+
+    /* Fullscreen keeps buttons positioned */
     .video-container:fullscreen{
       width:100vw; */
       height:100vh;
@@ -69,14 +87,6 @@ height of the available window.
     .controls{
       text-align:center;
       margin-top:16px;
-    }
-    .btn{
-      padding:8px 14px;
-      border:none;
-      background:#444;
-      color:#fff;
-      border-radius:8px;
-      cursor:pointer;
     }
   
     /* fullscreen video should show entire height */
@@ -99,37 +109,37 @@ height of the available window.
       <video id="video" playsinline>
         <source src="Pause2.mp4" type="video/mp4">
       </video>
-      <div class="overlay-btn" id="overlayBtn">▶</div>
-    </div>
-
-    <div class="controls">
-      <button class="btn" id="fsBtn">Fullscreen</button>
+      <div class="yellow-btn" id="yellowBtn">▶</div>
+      <div class="blue-btn" id="blueBtn">▶</div>
     </div>
   </div>
 
   <script>
     const video = document.getElementById("video");
-    const overlayBtn = document.getElementById("overlayBtn");
-    const fsBtn = document.getElementById("fsBtn");
+    const yellowBtn = document.getElementById("yellowBtn");
+    const blueBtn = document.getElementById("blueBtn");
     const vidBox = document.getElementById("vidBox");
 
-    overlayBtn.addEventListener("click", () => {
+    yellowBtn.addEventListener("click", () => {
       if (video.paused){
         vidBox.requestFullscreen();
         video.play();
-        overlayBtn.textContent = "❚❚";
+        yellowBtn.textContent = "❚❚";
       } else {
         video.pause();
         document.exitFullscreen();
-        overlayBtn.textContent = "▶";
+        yellowBtn.textContent = "▶";
       }
     });
-
-    fsBtn.addEventListener("click", () => {
-      if (!document.fullscreenElement){
+    yellowBtn.addEventListener("click", () => {
+      if (video.paused){
         vidBox.requestFullscreen();
+        video.play();
+        yellowBtn.textContent = "❚❚";
       } else {
+        video.pause();
         document.exitFullscreen();
+        yellowBtn.textContent = "▶";
       }
     });
   </script>
