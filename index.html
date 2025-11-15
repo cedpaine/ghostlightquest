@@ -184,7 +184,6 @@ console.log(playing);
   		}
   		else {
   			playing = vidList[playing]['next'];
-console.log(playing);
   			video.src = playing;
   			if (playing.includes('Pause')) {
   				if (playing.includes('Pause1.')) {
@@ -203,8 +202,8 @@ console.log(playing);
     startBtn.addEventListener("click", () => {
       	video.src = 'Seq1.mp4';
   		playing = 'Seq1.mp4';
-console.log(playing);
-        vidBox.requestFullscreen();
+  		if (!isIOS())
+        	vidBox.requestFullscreen();
         video.play();
         startBtn.style.display = "none";
     });
@@ -212,7 +211,6 @@ console.log(playing);
         yellowBtn.style.display = 'none';
         blueBtn.style.display = 'none';
         playing = vidList[playing]['yellow'];
-console.log(playing);
     	video.src = playing;
         video.play();
     });
@@ -220,10 +218,16 @@ console.log(playing);
         yellowBtn.style.display = 'none';
         blueBtn.style.display = 'none';
     	playing = vidList[playing]['blue'];
-console.log(playing);
     	video.src = playing;
         video.play();
     });
+    
+    function isIOS() {
+    	if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    		return false; // Not in a browser environment
+  		}
+  		return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+	}
   </script>
 </body>
 </html>
