@@ -108,6 +108,9 @@ also includes a Fullscreen button that keeps the layout when entering fullscreen
         <source src="Pause1.mp4" type="video/mp4">
         Your browser does not support the video element.
       </video>
+      <div class="start-btn" id="startBtn">▶</div>
+      <div class="yellow-btn" id="yellowBtn"></div>
+      <div class="blue-btn" id="blueBtn"></div>
     </div>
 
     <div class="controls" aria-hidden="false">
@@ -116,6 +119,43 @@ also includes a Fullscreen button that keeps the layout when entering fullscreen
   </div>
 
   <script>
+    var playing = 'Pause1.mp4';
+    const vidList = {
+    	'Pause1.mp4': {top: '50%', next: 'Seq1.mp4'},
+    	'Seq1.mp4': {next: 'Pause2.mp4'},
+    	'Pause2.mp4': {top: '21%', yellow:'Seq2.mp4', blue: 'Seq3.mp4'},
+    	'Seq2.mp4': {next: 'Pause1.mp4'},
+    	'Seq3.mp4': {next: 'Pause3.mp4'},
+    	'Pause3.mp4': {top: '16.5%', yellow:'Seq4.mp4', blue: 'Seq5.mp4'},
+    	'Seq4.mp4': {next: 'Pause4.mp4'},
+    	'Seq5.mp4': {next: 'Seq8.mp4'},
+    	'Pause4.mp4': {top: '16.5%', yellow:'Seq6.mp4', blue: 'Seq7.mp4'},
+    	'Seq6.mp4': {next: 'Pause1.mp4'},
+    	'Seq7.mp4': {next: 'Seq8.mp4'},
+    	'Seq8.mp4': {next: 'Pause5.mp4'},
+    	'Pause5.mp4': {top: '82.7%', yellow:'Seq9.mp4', blue: 'Seq10.mp4'},
+    	'Seq9.mp4': {next: 'Pause1.mp4'},
+    	'Seq10.mp4': {next: 'Pause6.mp4'},
+    	'Pause6.mp4': {top: '86.7%', yellow:'Seq11.mp4', blue: 'Seq12.mp4'},
+    	'Seq11.mp4': {next: 'Pause7.mp4'},
+    	'Seq12.mp4': {next: 'Pause8.mp4'},
+    	'Pause7.mp4': {top: '86.7%', yellow:'Seq14.mp4', blue: 'Seq15.mp4'},
+    	'Pause8.mp4': {top: '76.4%', yellow:'Seq13.mp4', blue: 'Seq16.mp4'},
+    	'Seq13.mp4': {next: 'Pause1.mp4'},
+    	'Seq14.mp4': {next: 'Pause1.mp4'},
+    	'Seq15.mp4': {next: 'Seq17.mp4'},
+    	'Seq16.mp4': {next: 'Seq17.mp4'},
+    	'Seq17.mp4': {next: 'Pause9.mp4'},
+    	'Pause9.mp4': {top: '39.4%', yellow:'Seq18.mp4', blue: 'Seq19.mp4'},
+    	'Seq18.mp4': {next: 'Pause10.mp4'},
+    	'Seq19.mp4': {next: 'Pause11.mp4'},
+    	'Pause10.mp4': {top: '45.5%', yellow:'Seq20.mp4', blue: 'Seq21.mp4'},
+    	'Pause11.mp4': {top: '16.8%', yellow:'Seq22.mp4', blue: 'Seq23.mp4'},
+    	'Seq20.mp4': {next: 'Pause1.mp4'},
+    	'Seq21.mp4': {next: 'Pause1.mp4'},
+    	'Seq22.mp4': {next: 'Pause1.mp4'},
+    	'Seq23.mp4': {next: 'Pause1.mp4'}
+    }
     // Set CSS variable --vh to reflect the real innerHeight (works well on mobile browsers,
     // including iOS Safari with dynamic address bars).
     function setVh() {
@@ -140,9 +180,9 @@ also includes a Fullscreen button that keeps the layout when entering fullscreen
     }
 
     // Fullscreen handling (some iOS versions support requestFullscreen on elements)
-    const fsBtn = document.getElementById('fsBtn');
-    const player = document.getElementById('player');
-    const videoPage = document.getElementById('videoPage');
+    const fsBtn = document.getElementById('fsBtn');  // fullscreen button
+    const player = document.getElementById('player');  // the video
+    const videoPage = document.getElementById('videoPage'); //the outer wrapper 
 
     async function enterFullscreen() {
       // Prefer the video element for fullscreen if available
@@ -203,6 +243,48 @@ also includes a Fullscreen button that keeps the layout when entering fullscreen
     // Accessibility: allow keyboard users to toggle fullscreen with Enter/Space on the button.
     fsBtn.addEventListener('keyup', (e) => {
       if (e.key === 'Enter' || e.key === ' ') fsBtn.click();
+    });
+    
+    player.addEventListener('ended', () => {
+    	if (playing.includes('Pause')) {
+    		player.src = playing;  // loop until a button is pressed
+  		}
+  		else {
+  			playing = vidList[playing]['next'];
+  			player.src = playing;
+  			if (playing.includes('Pause')) {
+  				if (playing.includes('Pause1.')) {
+        			startBtn.style.display = "flex";
+        		}
+        		else {
+        			yellowBtn.style.top = vidList[playing]['top'];
+        			blueBtn.style.top = vidList[playing]['top'];
+        			yellowBtn.style.display = 'flex';
+        			blueBtn.style.display = 'flex';
+        		}
+  			}
+  		}
+	});
+    startBtn.addEventListener("click", () => {
+      	player.src = 'Seq1.mp4';
+  		playing = 'Seq1.mp4';
+        videoPage.requestFullscreen();
+        player.play();
+        startBtn.style.display = "none";
+    });
+    yellowBtn.addEventListener("click", () => {
+        yellowBtn.style.display = 'none';
+        blueBtn.style.display = 'none';
+        playing = vidList[playing]['yellow'];
+    	player.src = playing;
+        player.play();
+    });
+    blueBtn.addEventListener("click", () => {
+        yellowBtn.style.display = 'none';
+        blueBtn.style.display = 'none';
+    	playing = vidList[playing]['blue'];
+    	player.src = playing;
+        player.play();
     });
   </script>
 </body>
