@@ -1,227 +1,209 @@
 <!doctype html>
 <html lang="en">
 <head>
-<!--
-ChatGTP prompt:
-css, html, and javascript for a video with a circular button overlay covering 30% of the 
-width of the video. The video should be in portrait mode with a 9:16 aspect ratio.
+<!-- ChatGPT Prompts:
+css, html, and javascript to display a video on an iPhone. Center the video horizontally 
+and show its entire height between the URL and button bars.
+ChatGPT Response:
+Nice — here's a single HTML file (HTML + CSS + JS) that displays a video on iPhone/Safari, 
+centers it horizontally, and ensures the video shows its entire height between the browser 
+URL bar and the bottom button bar (uses window.innerHeight + iOS safe-area insets). It 
+also includes a Fullscreen button that keeps the layout when entering fullscreen.
 -->
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Portrait Video with 30% Circular Overlay</title>
-<style>
-  :root{
-    --max-width: 420px; /* you can change the max width */
-    --overlay-size: 30%; /* diameter = 30% of the video's width */
-  }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>iPhone-safe Video</title>
+  <style>
+    /* Reset */
+    html,body {
+      height: 100%;
+      margin: 0;
+      background: #000;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+    }
 
-  body{
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    display:flex;
-    min-height:100vh;
-    align-items:center;
-    justify-content:center;
-    background:#0f1720;
-    margin:0;
-    padding:24px;
-    color: #fff;
-  }
+    /* Root CSS var for dynamic vh (set by JS) */
+    :root {
+      --vh: 1vh;
+    }
 
-  /* Container that maintains a 9:16 portrait aspect ratio */
-  .video-container{
-    width:100%;
-    max-width:var(--max-width);
-    /* prefer modern aspect-ratio if available */
-    aspect-ratio: 9 / 16; /* width / height -> portrait */
-    position:relative;
-    background:#000;
-    border-radius:12px;
-    overflow:hidden;
-    box-shadow: 0 10px 30px rgba(2,6,23,0.7);
-  }
+    /* Full-page container that respects iOS safe area insets.
+       We position it between the URL bar and bottom toolbar using
+       top/bottom env(safe-area-inset-*) and set its height using the dynamic --vh */
+    .video-page {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: env(safe-area-inset-top);
+      bottom: env(safe-area-inset-bottom);
+      height: calc(var(--vh, 1vh) * 100 - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      display: flex;
+      align-items: center;        /* vertical centering within available area */
+      justify-content: center;    /* horizontal centering */
+      padding-left: 10px;
+      padding-right: 10px;
+      box-sizing: border-box;
+      gap: 12px;
+    }
 
-  /* Fallback for browsers without aspect-ratio */
-  .video-container.fallback {
-    height:0;
-    padding-top:177.7777778%; /* (16/9)*100% */
-  }
+    /* Video wrapper constrains the video. Keeps video centered horizontally.
+       We make the wrapper as tall as the available area so the video can be height-limited. */
+    .video-wrapper {
+      height: 100%;
+      display: flex;
+      align-items: center;    /* center vertically inside available area */
+      justify-content: center;/* center horizontally */
+      width: 100%;
+    }
 
-  .video-container video,
-  .video-container .poster{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
-  }
+    video {
+      display: block;
+      /* Make the video's height match the wrapper's height so the entire height is visible */
+      height: 100%;
+      width: auto;            /* preserve aspect ratio */
+      max-width: 100%;
+      object-fit: contain;    /* ensures full height is visible, width scales as needed */
+      border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+      background: #000;
+    }
 
-  /* Circular overlay button */
-  .overlay-btn{
-    position:absolute;
-    /* size relative to video width */
-    width:var(--overlay-size);
-    aspect-ratio:1/1; /* keep it circular */
-    border-radius:50%;
-    left:50%;
-    top:50%;
-    transform:translate(-50%,-50%);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border:2px solid rgba(255,255,255,0.12);
-    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    cursor:pointer;
-    transition: transform 180ms ease, box-shadow 180ms ease;
-    box-shadow: 0 8px 18px rgba(2,6,23,0.55);
-    user-select:none;
-  }
+    /* Controls row (fullscreen button). Keep it above bottom safe area */
+    .controls {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(env(safe-area-inset-bottom) + 8px);
+      display: flex;
+      justify-content: center;
+      pointer-events: none; /* allow only button to be interactive */
+    }
 
-  .overlay-btn:active { transform: translate(-50%,-50%) scale(0.98); }
+    .controls button {
+      pointer-events: auto;
+      appearance: none;
+      -webkit-appearance: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      font-size: 16px;
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+    }
 
-  .overlay-btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 6px rgba(99,102,241,0.14), 0 10px 25px rgba(2,6,23,0.65);
-  }
-
-  /* icon inside button */
-  .overlay-btn svg{
-    width:46%;
-    height:46%;
-    display:block;
-    fill: white;
-    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
-  }
-
-  /* small label for debugging/demo (optional) */
-  .note{
-    margin-top:12px;
-    text-align:center;
-    font-size:13px;
-    color: #cbd5e1;
-  }
-
-  /* responsive adjustments */
-  @media (max-width:380px){
-    :root{ --max-width: 320px; }
-  }
-</style>
+    /* Make the button slightly larger when video can be fullscreen */
+    .controls button:active { transform: scale(0.98); }
+  </style>
 </head>
 <body>
 
-  <div>
-    <div class="video-container" id="videoContainer" role="group" aria-label="Demo portrait video">
-      <!-- replace the src with your MP4 / WebM; set muted/autoplay if desired -->
-      <video id="myVideo" preload="metadata" playsinline webkit-playsinline>
+  <div class="video-page" id="videoPage">
+    <div class="video-wrapper">
+      <!-- Replace the source with your own video file or stream -->
+      <video id="player" playsinline controls preload="metadata" controlsList="nodownload">
         <source src="Pause1.mp4" type="video/mp4">
-        <!-- fallback poster if video cannot play -->
         Your browser does not support the video element.
       </video>
-
-      <!-- overlay button (diameter = 30% of video width) -->
-      <button id="overlayBtn" class="overlay-btn" aria-pressed="false" aria-label="Play video (press Enter or Space to toggle)">
-        <!-- Play / Pause icon: we'll swap paths with JS -->
-        <svg id="btnIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <!-- default: play icon -->
-          <path d="M8 5v14l11-7z"></path>
-        </svg>
-      </button>
     </div>
 
-    <div class="note">Portrait video (9:16). Circular overlay = 30% of video width.</div>
-    <button id="fullscreenButton">Go Fullscreen</button>
+    <div class="controls" aria-hidden="false">
+      <button id="fsBtn" type="button" title="Fullscreen">Enter Fullscreen</button>
+    </div>
   </div>
 
-<script>
-  (function(){
-    const video = document.getElementById('myVideo');
-    const btn = document.getElementById('overlayBtn');
-    const icon = document.getElementById('btnIcon');
-    const container = document.getElementById('videoContainer');
-
-    // If the browser doesn't support CSS aspect-ratio, enable fallback class
-    (function addAspectFallback(){
-      const test = CSS.supports && CSS.supports('aspect-ratio: 1 / 1');
-      if(!test){
-        container.classList.add('fallback');
-      }
-    })();
-
-    // Icons (simple SVG paths)
-    const ICONS = {
-      play: '<path d="M8 5v14l11-7z"></path>',
-      pause: '<path d="M6 19h4V5H6zm8-14v14h4V5z"></path>'
-    };
-
-    function setIcon(isPlaying){
-      icon.innerHTML = isPlaying ? ICONS.pause : ICONS.play;
+  <script>
+    // Set CSS variable --vh to reflect the real innerHeight (works well on mobile browsers,
+    // including iOS Safari with dynamic address bars).
+    function setVh() {
+      // Use window.innerHeight for real viewport height (address bar included/excluded appropriately).
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
     }
 
-    // Toggle play/pause
-    function togglePlay(){
-      if(video.paused || video.ended){
-        // try to play (may be blocked unless muted or user interaction)
-        const p = video.play();
-        if(p !== undefined){
-          p.catch(err => {
-            // autoplay may be blocked; just set icon state as best-effort
-            console.warn('Play prevented:', err);
-          });
+    // Keep the video vertically centered and sized between the top and bottom browser bars.
+    // Update on load, resize, orientation change, and visual viewport scroll (iOS dynamic UI).
+    setVh();
+    window.addEventListener('resize', setVh, { passive: true });
+    window.addEventListener('orientationchange', () => {
+      // small timeout allows orientation change to settle
+      setTimeout(setVh, 150);
+    });
+
+    // VisualViewport events are helpful on iOS to detect URL bar changes while scrolling.
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', setVh, { passive: true });
+      window.visualViewport.addEventListener('scroll', setVh, { passive: true });
+    }
+
+    // Fullscreen handling (some iOS versions support requestFullscreen on elements)
+    const fsBtn = document.getElementById('fsBtn');
+    const player = document.getElementById('player');
+    const videoPage = document.getElementById('videoPage');
+
+    async function enterFullscreen() {
+      // Prefer the video element for fullscreen if available
+      const el = player ?? videoPage;
+      try {
+        if (el.requestFullscreen) {
+          await el.requestFullscreen();
+        } else if (el.webkitEnterFullscreen) {
+          // iOS Safari on older versions: video-specific fullscreen method
+          el.webkitEnterFullscreen();
+        } else if (el.webkitRequestFullscreen) {
+          el.webkitRequestFullscreen();
+        } else {
+          // fallback: just scroll the page so the video occupies most of the screen
+          player.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      } else {
-        video.pause();
+      } catch (err) {
+        console.warn('Fullscreen request failed:', err);
       }
     }
 
-    // update button state when playback changes
-    video.addEventListener('play', () => {
-      btn.setAttribute('aria-pressed', 'true');
-      setIcon(true);
-    });
-    video.addEventListener('pause', () => {
-      btn.setAttribute('aria-pressed', 'false');
-      setIcon(false);
-    });
-    video.addEventListener('ended', () => {
-      btn.setAttribute('aria-pressed', 'false');
-      setIcon(false);
-    });
+    async function exitFullscreen() {
+      try {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      } catch (err) {
+        console.warn('Exit fullscreen failed:', err);
+      }
+    }
 
-    // click / keyboard handlers
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      togglePlay();
-    });
-
-    btn.addEventListener('keydown', (e) => {
-      // allow Enter or Space to toggle
-      if(e.key === 'Enter' || e.key === ' '){
-        e.preventDefault();
-        togglePlay();
+    fsBtn.addEventListener('click', async () => {
+      // toggle fullscreen
+      const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      if (!isFs) {
+        await enterFullscreen();
+        fsBtn.textContent = 'Exit Fullscreen';
+      } else {
+        await exitFullscreen();
+        fsBtn.textContent = 'Enter Fullscreen';
       }
     });
 
-    // allow clicking the video itself to toggle as well (optional)
-    video.addEventListener('click', togglePlay);
+    // Update button text if user exits fullscreen via native UI
+    document.addEventListener('fullscreenchange', () => {
+      const isFs = !!document.fullscreenElement;
+      fsBtn.textContent = isFs ? 'Exit Fullscreen' : 'Enter Fullscreen';
+      // when going fullscreen, recompute vh (some browsers change viewport)
+      setTimeout(setVh, 120);
+    });
 
-    // set initial icon based on paused state
-    setIcon(video && !video.paused);
+    // Some iOS browsers change UI when video is played; keep sizes synced.
+    player.addEventListener('play', setVh);
+    player.addEventListener('pause', setVh);
 
-    // OPTIONAL: Make sure video is muted on load if you want autoplay to work on some browsers:
-    // video.muted = true;
-    // video.autoplay = true;
-		
-	const fullscreenButton = document.getElementById('fullscreenButton');
-
-	fullscreenButton.addEventListener('click', () => {
-  		if (video.requestFullscreen) {
-    		video.requestFullscreen();
-  		}
-	});
-  })();
-</script>
-
+    // Accessibility: allow keyboard users to toggle fullscreen with Enter/Space on the button.
+    fsBtn.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') fsBtn.click();
+    });
+  </script>
 </body>
 </html>
