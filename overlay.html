@@ -70,6 +70,60 @@ also includes a Fullscreen button that keeps the layout when entering fullscreen
       background: #000;
     }
 
+    .start-btn{
+      position:absolute;
+      height:10%;           /* 10% of video height */
+      aspect-ratio:1/1;    /* circle */
+      border-radius:50%;
+      background:rgba(255,255,255,0);
+      top:53%;
+      left:50%;
+      transform:translate(-50%, -50%);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      cursor:pointer;
+      font-size:28px;
+      font-weight:bold;
+      user-select:none;
+    }
+
+    .yellow-btn{
+      position:absolute;
+      height:10.6%;           /* 10.6% of video height */
+      aspect-ratio:1/1;    /* circle */
+      border-radius:50%;
+      background:rgba(255,255,255,0);
+      top:0%;
+      left:50%;
+      transform:translateX(-145%);
+      display:none;
+      justify-content:center;
+      align-items:center;
+      cursor:pointer;
+      font-size:28px;
+      font-weight:bold;
+      user-select:none;
+    }
+
+    .blue-btn{
+      position:absolute;
+      height:10.6%;           /* 10.6% of video height */
+      aspect-ratio:1/1;    /* circle */
+      border-radius:50%;
+      background:rgba(255,255,255,0);
+      top:0%;
+      left:50%;
+      transform:translateX(48%);
+      display:none;
+      justify-content:center;
+      align-items:center;
+      cursor:pointer;
+      font-size:28px;
+      font-weight:bold;
+      user-select:none;
+    }
+
     /* Controls row (fullscreen button). Keep it above bottom safe area */
     .controls {
       position: absolute;
