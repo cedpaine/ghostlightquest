@@ -234,7 +234,7 @@ also includes a Fullscreen button that keeps the layout when entering fullscreen
     }
 
     // Fullscreen handling (some iOS versions support requestFullscreen on elements)
-    const fsBtn = document.getElementById('fsBtn');  // fullscreen button
+//    const fsBtn = document.getElementById('fsBtn');  // fullscreen button
     const player = document.getElementById('player');  // the video
     const videoPage = document.getElementById('videoPage'); //the outer wrapper 
 
@@ -281,7 +281,7 @@ also includes a Fullscreen button that keeps the layout when entering fullscreen
         fsBtn.textContent = 'Enter Fullscreen';
       }
     });
-*/
+	
     // Update button text if user exits fullscreen via native UI
     document.addEventListener('fullscreenchange', () => {
       const isFs = !!document.fullscreenElement;
@@ -289,7 +289,7 @@ also includes a Fullscreen button that keeps the layout when entering fullscreen
       // when going fullscreen, recompute vh (some browsers change viewport)
       setTimeout(setVh, 120);
     });
-
+*/
     // Some iOS browsers change UI when video is played; keep sizes synced.
     player.addEventListener('play', setVh);
     player.addEventListener('pause', setVh);
@@ -319,10 +319,11 @@ also includes a Fullscreen button that keeps the layout when entering fullscreen
   			}
   		}
 	});
-    startBtn.addEventListener("click", () => {
+    startBtn.addEventListener("click", async () => {
+      // toggle fullscreen
+    	await enterFullscreen();
       	player.src = 'Seq1.mp4';
   		playing = 'Seq1.mp4';
-        videoPage.requestFullscreen();
         player.play();
         startBtn.style.display = "none";
     });
