@@ -295,10 +295,10 @@ also includes a Fullscreen button that keeps the layout when entering fullscreen
     player.addEventListener('pause', setVh);
 
     // Accessibility: allow keyboard users to toggle fullscreen with Enter/Space on the button.
-    fsBtn.addEventListener('keyup', (e) => {
+/*    fsBtn.addEventListener('keyup', (e) => {
       if (e.key === 'Enter' || e.key === ' ') fsBtn.click();
     });
-    
+*/    
     player.addEventListener('ended', () => {
     	if (playing.includes('Pause')) {
     		player.src = playing;  // loop until a button is pressed
