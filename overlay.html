@@ -270,7 +270,7 @@ also includes a Fullscreen button that keeps the layout when entering fullscreen
       }
     }
 
-    fsBtn.addEventListener('click', async () => {
+/*    fsBtn.addEventListener('click', async () => {
       // toggle fullscreen
       const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
       if (!isFs) {
@@ -281,7 +281,7 @@ also includes a Fullscreen button that keeps the layout when entering fullscreen
         fsBtn.textContent = 'Enter Fullscreen';
       }
     });
-
+*/
     // Update button text if user exits fullscreen via native UI
     document.addEventListener('fullscreenchange', () => {
       const isFs = !!document.fullscreenElement;
