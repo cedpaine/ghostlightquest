@@ -403,7 +403,6 @@ if (window.visualViewport) {
   			playing = vidList[playing]['next'];
   			player.src = playing;
   			if (playing.includes('Pause')) {
-updateOverlayPosition();
   				if (playing.includes('Pause1.')) {
         			startBtn.style.display = "flex";
         		}
@@ -413,6 +412,7 @@ updateOverlayPosition();
         			yellowBtn.style.display = 'flex';
         			blueBtn.style.display = 'flex';
         		}
+updateOverlayPosition();
   			}
   		}
 	});
