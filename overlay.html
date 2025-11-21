@@ -1,206 +1,205 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Video with Circular Overlay</title>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Portrait 9:16 Video Player</title>
 
-  <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      background: black;
-    }
+<style>
+  :root {
+    /* Play button = 10% of visible screen height */
+    --btn-size: 10vh;
+  }
 
-    :root { --vh: 1vh; }
+  body {
+    margin:0;
+    padding:0;
+    background:black;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    height:100dvh;              /* dynamic viewport height */
+  }
 
-    .video-page {
-      position: fixed;
-      left: 0;
-      right: 0;
-      top: env(safe-area-inset-top);
-      bottom: env(safe-area-inset-bottom);
-      height: calc(var(--vh) * 100 - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px;
-      box-sizing: border-box;
-    }
+  /* -----------------------------------------
+     Video container: height is dynamically set
+     to the REAL visible viewport height via JS
+     ----------------------------------------- */
+  .video-viewport {
+    position:relative;
+    width:100%;
+    max-width:500px;             /* optional */
+    background:black;
+    overflow:hidden;
+    border-radius:12px;
+    touch-action:manipulation;
+  }
 
-    .video-wrapper {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      position: relative; /* allows overlay positioning */
-    }
+  /* Maintain 9:16 shape when *not* fullscreen */
+  .video-viewport:not(.fs-mode) {
+    aspect-ratio:9/16;
+  }
 
-    video {
-      display: block;
-      height: 100%;
-      width: auto;
-      max-width: 100%;
-      object-fit: contain;
-      background: black;
-      border-radius: 8px;
-    }
+  /* -----------------------------------------
+     Video always shows FULL HEIGHT (no crop)
+     ----------------------------------------- */
+  video {
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    object-fit:contain;          /* <-- ensures full height always visible */
+    background:black;            /* <-- black bars on sides */
+    pointer-events:none;         /* UI must sit above video */
+  }
 
-    /* Fullscreen toggle button (bottom) */
-    .controls {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: calc(env(safe-area-inset-bottom) + 8px);
-      display: flex;
-      justify-content: center;
-      pointer-events: none;
-    }
+  /* -----------------------------------------
+     Play button
+     ----------------------------------------- */
+  #playBtn {
+    position:absolute;
+    top:47.8%;
+    left:50%;                    /* 25% from left (your request) */
+    transform:translateX(-50%);
+    width:var(--btn-size);
+    height:var(--btn-size);
+    border-radius:50%;
+    background:rgba(255,255,255,0.9);
+    color:black;
+    font-weight:600;
+    font-size:20px;
+    border:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    z-index:20;
+  }
 
-    .controls button {
-      pointer-events: auto;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: none;
-      background: rgba(255,255,255,0.12);
-      color: white;
-      font-size: 16px;
-      backdrop-filter: blur(6px);
-    }
+  /* -----------------------------------------
+     FULLSCREEN OVERRIDES
+     Preserve portrait fit + full-height visible
+     ----------------------------------------- */
 
-    /* --- NEW: CIRCULAR OVERLAY BUTTON --- */
-    #exitFsOverlay {
-      position: absolute;
-      background: rgba(255, 255, 255, 0.18);
-      backdrop-filter: blur(6px);
-      border-radius: 50%;
-      color: white;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 99;
-      cursor: pointer;
-      user-select: none;
-      -webkit-user-select: none;
-      text-align: center;
-      padding: 0;
-    }
-  </style>
+  :fullscreen .video-viewport,
+  :-webkit-full-screen .video-viewport {
+    width:100vw;
+    height:100vh;
+    border-radius:0;
+  }
+
+  :fullscreen video,
+  :-webkit-full-screen video {
+    width:100%;
+    height:100%;
+    object-fit:contain;          /* still pillarboxed */
+    background:black;
+  }
+
+  :fullscreen #playBtn,
+  :-webkit-full-screen #playBtn {
+    width:10vh;
+    height:10vh;
+  }
+</style>
 </head>
-
 <body>
 
-<div class="video-page">
-  <div class="video-wrapper" id="wrapper">
+<div class="video-viewport" id="viewport">
+  <video id="video"
+         playsinline
+         webkit-playsinline
+         preload="auto"
+         src="pause1.mp4"></video>
 
-    <!-- VIDEO -->
-    <video id="player" playsinline controls preload="metadata">
-      <source src="Pause1.mp4" type="video/mp4">
-    </video>
-
-    <!-- CIRCULAR OVERLAY (always visible) -->
-    <div id="exitFsOverlay">X</div>
-
-  </div>
-
-  <div class="controls">
-    <button id="fsBtn">Enter Fullscreen</button>
-  </div>
+  <button id="playBtn">▶</button>
 </div>
 
 <script>
+  const viewport = document.getElementById("viewport");
+  const video = document.getElementById("video");
+  const playBtn = document.getElementById("playBtn");
 
-/* -------------------------------
-   Dynamic Mobile Viewport Fix
----------------------------------*/
-function setVh() {
-  const vh = window.innerHeight * 0.01;
-  document.documentElement.style.setProperty("--vh", `${vh}px`);
-}
-setVh();
-window.addEventListener("resize", setVh);
-window.addEventListener("orientationchange", () => setTimeout(setVh, 150));
-if (window.visualViewport) {
-  visualViewport.addEventListener("resize", setVh);
-  visualViewport.addEventListener("scroll", setVh);
-}
+  /* ---------------------------------------------------
+     1. FORCE PORTRAIT ORIENTATION IN FULLSCREEN
+     --------------------------------------------------- */
+  function lockPortrait() {
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock("portrait").catch(() => {});
+    }
+  }
 
-/* -------------------------------
-   Fullscreen Controls
----------------------------------*/
-const fsBtn = document.getElementById("fsBtn");
-const overlay = document.getElementById("exitFsOverlay");
-const player = document.getElementById("player");
-const wrapper = document.getElementById("wrapper");
+  /* ---------------------------------------------------
+     2. UNIVERSAL FULLSCREEN ENTRY
+     --------------------------------------------------- */
+  async function enterFullscreen() {
+    lockPortrait();
 
-async function enterFullscreen() {
-  try {
-    if (player.requestFullscreen) await player.requestFullscreen();
-    else if (player.webkitRequestFullscreen) player.webkitRequestFullscreen();
-    else if (player.webkitEnterFullscreen) player.webkitEnterFullscreen();
-  } catch (err) {}
-}
+    // iPhone native fullscreen
+    if (video.webkitEnterFullscreen) {
+      video.webkitEnterFullscreen();
+      return;
+    }
 
-async function exitFullscreen() {
-  try {
-    if (document.exitFullscreen) await document.exitFullscreen();
-    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-  } catch (err) {}
-}
+    // Standard fullscreen
+    const req =
+      viewport.requestFullscreen ||
+      viewport.webkitRequestFullscreen ||
+      viewport.mozRequestFullScreen ||
+      viewport.msRequestFullscreen;
 
-fsBtn.addEventListener("click", () => {
-  const isFs = document.fullscreenElement || document.webkitFullscreenElement;
-  if (!isFs) enterFullscreen();
-  else exitFullscreen();
-});
+    if (req) req.call(viewport);
+  }
 
-document.addEventListener("fullscreenchange", () => {
-  const isFs = document.fullscreenElement;
-  fsBtn.textContent = isFs ? "Exit Fullscreen" : "Enter Fullscreen";
-  updateOverlayPosition();
-});
+  /* ---------------------------------------------------
+     3. ALWAYS FIT VIDEO TO THE *REAL VISIBLE SCREEN*
+     (Works on iPhone Safari dynamic viewport)
+     --------------------------------------------------- */
+  function resizeViewport() {
+    const visibleHeight = window.visualViewport
+      ? window.visualViewport.height
+      : window.innerHeight;
 
+    viewport.style.height = visibleHeight + "px";
+  }
 
-/* -------------------------------
-   Position Overlay Relative to Video
-   - diameter = 10% of video height
-   - top = 25% of video height
-   - centered horizontally
----------------------------------*/
-function updateOverlayPosition() {
-  const rect = player.getBoundingClientRect();
+  /* Initial sizing */
+  resizeViewport();
 
-  const videoHeight = rect.height;
-  const videoWidth = rect.width;
+  /* Update on any viewport change */
+  window.visualViewport?.addEventListener("resize", resizeViewport);
+  window.addEventListener("orientationchange", () => {
+    setTimeout(resizeViewport, 300); // allow UI bars to animate
+  });
+  document.addEventListener("fullscreenchange", resizeViewport);
 
-  const diameter = videoHeight * 0.10;       // 10% height
-  const topPos = rect.top + videoHeight * 0.25;  // 25% from top of video
-  const leftPos = rect.left + (videoWidth / 2) - (diameter / 2);
+  /* ---------------------------------------------------
+     4. PLAY BUTTON BEHAVIOR
+     --------------------------------------------------- */
+  playBtn.addEventListener("click", async () => {
+    // Toggle play/pause
+    if (video.paused) {
+      await video.play();
+      playBtn.textContent = "❚❚";
+    } else {
+      video.pause();
+      playBtn.textContent = "▶";
+    }
 
-  overlay.style.width = `${diameter}px`;
-  overlay.style.height = `${diameter}px`;
-  overlay.style.lineHeight = `${diameter}px`; // for centered text
-  overlay.style.top = `${topPos}px`;
-  overlay.style.left = `${leftPos}px`;
-}
+    // Enter fullscreen always
+    enterFullscreen();
+  });
 
-window.addEventListener("resize", updateOverlayPosition);
-window.addEventListener("orientationchange", () => setTimeout(updateOverlayPosition, 150));
+  video.addEventListener("play", () => {
+    playBtn.textContent = "❚❚";
+  });
 
-player.addEventListener("loadedmetadata", updateOverlayPosition);
-player.addEventListener("play", updateOverlayPosition);
-player.addEventListener("pause", updateOverlayPosition);
-
-if (window.visualViewport) {
-  visualViewport.addEventListener("resize", updateOverlayPosition);
-  visualViewport.addEventListener("scroll", updateOverlayPosition);
-}
-
-/* When overlay is tapped, exit fullscreen */
-overlay.addEventListener("click", exitFullscreen);
-
+  video.addEventListener("pause", () => {
+    playBtn.textContent = "▶";
+  });
 </script>
+
 </body>
 </html>
